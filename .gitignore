@@ -4,6 +4,7 @@ vendor/
 .idea/
 bin/
 tmp/
+pgdata/
 node_modules/
 .sass-cache/
 public/assets/
