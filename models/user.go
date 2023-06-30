@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 	"fmt"
+	"database/sql"
 
 	"github.com/gobuffalo/pop/v6"
 	"github.com/gobuffalo/validate/v3"
@@ -114,4 +115,22 @@ func (v *EmailNotTaken) IsValid(errors *validate.Errors) {
 		// found a user with the same email
 		errors.Add(validators.GenerateKey(v.Name), "An account with that email already exists.")
 	}
+}
+
+// Authorize checks user's password for logging in
+func (u *User) Authorize(tx *pop.Connection) error {
+	err := tx.Where("email = ?", strings.ToLower(u.Email)).First(u)
+	if err != nil {
+		if errors.Cause(err) == sql.ErrNoRows {
+			// couldn't find an user with that email address
+			return errors.New("User not found.")
+		}
+		return errors.WithStack(err)
+	}
+	// confirm that the given password matches the hashed password from the db
+	err = bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(u.Password))
+	if err != nil {
+		return errors.New("Invalid password.")
+	}
+	return nil
 }
