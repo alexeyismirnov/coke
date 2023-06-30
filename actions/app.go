@@ -77,11 +77,15 @@ func App() *buffalo.App {
 		auth.POST("/login", UsersLoginPost)
 		auth.GET("/logout", UsersLogout)
 
-		app.GET("/posts/index", PostsIndex)
-		app.GET("/posts/create", PostsCreate)
-		app.GET("/posts/edit", PostsEdit)
-		app.GET("/posts/delete", PostsDelete)
-		app.GET("/posts/detail", PostsDetail)
+		postGroup := app.Group("/posts")
+		postGroup.GET("/index", PostsIndex)
+		postGroup.GET("/create", AdminRequired(PostsCreateGet))
+		postGroup.POST("/create", AdminRequired(PostsCreatePost))
+		postGroup.GET("/detail/{pid}", PostsDetail)
+		postGroup.GET("/edit/{pid}", AdminRequired(PostsEditGet))
+		postGroup.POST("/edit/{pid}", AdminRequired(PostsEditPost))
+		postGroup.GET("/delete/{pid}", AdminRequired(PostsDelete))
+
 		app.ServeFiles("/", http.FS(public.FS())) // serve files from the public directory
 	})
 
