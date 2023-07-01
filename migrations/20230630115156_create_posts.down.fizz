@@ -1,1 +1,1 @@
-drop_table("comments")
+drop_table("posts")
